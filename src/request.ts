@@ -8,14 +8,15 @@ import {InitialUploadDetails, UploadDetails} from './types.d'
 
 export async function createUpload(
   xpiPath: string,
-  token: string
+  token: string,
+  channel: string
 ): Promise<InitialUploadDetails> {
   const url = `${baseURL}/addons/upload/`
   const body = new FormData()
 
   core.debug(`Uploading ${xpiPath}`)
   body.append('upload', createReadStream(resolve(xpiPath)))
-  body.append('channel', 'listed')
+  body.append('channel', channel)
 
   const response = await axios.post(url, body, {
     headers: {

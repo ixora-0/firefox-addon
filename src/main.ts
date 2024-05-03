@@ -9,9 +9,15 @@ async function run(): Promise<void> {
     const key = core.getInput('api_key', {required: true})
     const secret = core.getInput('api_secret', {required: true})
     const srcPath = core.getInput('src_path')
+    const channel = core.getInput('channel') || 'listed'
+    if (channel !== 'listed' && channel !== 'unlisted') {
+      core.setFailed(
+        'Invalid channel type. Channel must be either "listed" or "unlisted".'
+      )
+    }
 
     const token = generateJWT(key, secret)
-    const uploadDetails = await createUpload(xpiPath, token)
+    const uploadDetails = await createUpload(xpiPath, token, channel)
 
     const timeout = 10 * 60 * 1000
     const sleepTime = 5 * 1000

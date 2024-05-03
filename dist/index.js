@@ -50,8 +50,12 @@ function run() {
             const key = core.getInput('api_key', { required: true });
             const secret = core.getInput('api_secret', { required: true });
             const srcPath = core.getInput('src_path');
+            const channel = core.getInput('channel') || 'listed';
+            if (channel !== 'listed' && channel !== 'unlisted') {
+                core.setFailed('Invalid channel type. Channel must be either "listed" or "unlisted".');
+            }
             const token = (0, util_1.generateJWT)(key, secret);
-            const uploadDetails = yield (0, request_1.createUpload)(xpiPath, token);
+            const uploadDetails = yield (0, request_1.createUpload)(xpiPath, token, channel);
             const timeout = 10 * 60 * 1000;
             const sleepTime = 5 * 1000;
             const startTime = Date.now();
@@ -140,13 +144,13 @@ const util_1 = __nccwpck_require__(4024);
 const path_1 = __nccwpck_require__(1017);
 const fs_1 = __nccwpck_require__(7147);
 const axios_1 = __importDefault(__nccwpck_require__(8757));
-function createUpload(xpiPath, token) {
+function createUpload(xpiPath, token, channel) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = `${util_1.baseURL}/addons/upload/`;
         const body = new form_data_1.default();
         core.debug(`Uploading ${xpiPath}`);
         body.append('upload', (0, fs_1.createReadStream)((0, path_1.resolve)(xpiPath)));
-        body.append('channel', 'listed');
+        body.append('channel', channel);
         const response = yield axios_1.default.post(url, body, {
             headers: Object.assign(Object.assign({}, body.getHeaders()), { Authorization: `JWT ${token}` })
         });

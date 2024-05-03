@@ -16,6 +16,10 @@ inputs:
     description: 'API secret for AMO'
   src_path:
     description: 'path to src zip file for verification. To be used if your extension uses minification, or other build steps that make it difficult to read the code of the xpi.'
+  channel:
+    required: false
+    default: 'listed'
+    description: 'the channel this version should be uploaded to, which determines its visibility on the site. It can be either unlisted or listed'
 runs:
   using: 'node16'
   main: 'dist/index.js'
