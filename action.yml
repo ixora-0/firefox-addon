@@ -16,6 +16,10 @@ inputs:
     description: 'API secret for AMO'
   src_path:
     description: 'path to src zip file for verification. To be used if your extension uses minification, or other build steps that make it difficult to read the code of the xpi.'
+  wait_until_signed:
+    required: false
+    default: false
+    description: 'wait until AMO finished signing before exiting. this can take up to 24 hours or longer if your sumbission is selected for manual review.'
 runs:
   using: 'node16'
   main: 'dist/index.js'

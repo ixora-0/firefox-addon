@@ -50,19 +50,50 @@ function run() {
             const key = core.getInput('api_key', { required: true });
             const secret = core.getInput('api_secret', { required: true });
             const srcPath = core.getInput('src_path');
-            const token = (0, util_1.generateJWT)(key, secret);
+            const waitUntilSigned = core.getBooleanInput('wait_until_signed') || false;
+            let token = (0, util_1.generateJWT)(key, secret);
             const uploadDetails = yield (0, request_1.createUpload)(xpiPath, token);
             const timeout = 10 * 60 * 1000;
-            const sleepTime = 5 * 1000;
+            const updateVersionRetryDelay = 5 * 1000;
             const startTime = Date.now();
-            const interval = setInterval(() => __awaiter(this, void 0, void 0, function* () {
+            let versionID;
+            const updateVersionInterval = setInterval(() => __awaiter(this, void 0, void 0, function* () {
                 if (Date.now() - timeout > startTime) {
                     throw new Error('Extension validation timed out');
                 }
-                if (yield (0, request_1.tryUpdateExtension)(guid, uploadDetails.uuid, token, srcPath)) {
-                    clearInterval(interval);
+                token = (0, util_1.generateJWT)(key, secret);
+                const result = yield (0, request_1.tryUpdateExtension)(guid, uploadDetails.uuid, token, srcPath);
+                if (result.success) {
+                    versionID = result.versionDetails.id;
+                    clearInterval(updateVersionInterval);
+                    if (waitUntilSigned) {
+                        core.info('Wating for version to be reviewed and approved');
+                        checkVersion();
+                    }
                 }
-            }), sleepTime);
+            }), updateVersionRetryDelay);
+            const initRetryDelay = 5 * 1000;
+            const maxRetryDelay = 60 * 60 * 1000;
+            const backoffFactor = 1.5;
+            let retryCount = 0;
+            // check if file finished being reviewed
+            const checkVersion = () => __awaiter(this, void 0, void 0, function* () {
+                token = (0, util_1.generateJWT)(key, secret);
+                const versionDetails = yield (0, request_1.getVersionDetails)(guid, token, versionID);
+                if (versionDetails.file.status === 'unreviewed') {
+                    const retryDelay = Math.min(initRetryDelay * Math.pow(backoffFactor, retryCount), maxRetryDelay);
+                    core.info(`Check #${retryCount + 1}: unreviewed at ${new Date().toLocaleString()}, trying again after ${Math.floor(retryDelay / 1000)}s`);
+                    retryCount++;
+                    setTimeout(checkVersion, retryDelay);
+                    return;
+                }
+                if (versionDetails.file.status === 'public') {
+                    core.info('\u001b[38;5;2mVersion has been approved\u001b[0m');
+                }
+                else if (versionDetails.file.status === 'disabled') {
+                    core.info('\u001b[38;5;1mVersion has been rejected, disabled, or not reviewed\u001b[0m');
+                }
+            });
         }
         catch (error) {
             if (typeof error === 'object' && error && 'response' in error) {
@@ -133,7 +164,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getUploadDetails = exports.tryUpdateExtension = exports.createUpload = void 0;
+exports.getVersionDetails = exports.getUploadDetails = exports.tryUpdateExtension = exports.createUpload = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const form_data_1 = __importDefault(__nccwpck_require__(4334));
 const util_1 = __nccwpck_require__(4024);
@@ -159,7 +190,7 @@ function tryUpdateExtension(guid, uuid, token, srcPath) {
     return __awaiter(this, void 0, void 0, function* () {
         const details = yield getUploadDetails(uuid, token);
         if (!details.valid) {
-            return false;
+            return { success: false };
         }
         const url = `${util_1.baseURL}/addons/addon/${guid}/versions/`;
         const body = new form_data_1.default();
@@ -173,7 +204,10 @@ function tryUpdateExtension(guid, uuid, token, srcPath) {
             headers: Object.assign(Object.assign({}, body.getHeaders()), { Authorization: `JWT ${token}` })
         });
         core.debug(`Create version response: ${JSON.stringify(response.data)}`);
-        return true;
+        return {
+            success: true,
+            versionDetails: response.data
+        };
     });
 }
 exports.tryUpdateExtension = tryUpdateExtension;
@@ -190,6 +224,19 @@ function getUploadDetails(uuid, token) {
     });
 }
 exports.getUploadDetails = getUploadDetails;
+function getVersionDetails(guid, token, versionID) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const url = `${util_1.baseURL}/addons/addon/${guid}/versions/${versionID}`;
+        const response = yield axios_1.default.get(url, {
+            headers: {
+                Authorization: `JWT ${token}` // if it's unlisted we do need authorization
+            }
+        });
+        core.debug(`Get version details response: ${JSON.stringify(response.data)}`);
+        return response.data;
+    });
+}
+exports.getVersionDetails = getVersionDetails;
 
 
 /***/ }),

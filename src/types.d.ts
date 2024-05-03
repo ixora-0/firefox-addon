@@ -50,3 +50,21 @@ export interface UploadDetails extends BaseUploadDetails {
     ending_tier: number
   }
 }
+
+export interface VersionDetails {
+  id: number
+  file: {
+    id: number
+    status: string
+    url: string
+  }
+}
+
+export type TryUpdateResult =
+  | {
+      success: true
+      versionDetails: VersionDetails
+    }
+  | {
+      success: false
+    }
