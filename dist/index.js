@@ -69,6 +69,7 @@ function run() {
                 const result = yield (0, request_1.tryUpdateExtension)(guid, uploadDetails.uuid, token, srcPath);
                 if (result.success) {
                     versionID = result.versionDetails.id;
+                    core.setOutput("version_url", result.versionDetails.file.url);
                     clearInterval(updateVersionInterval);
                     if (waitUntilSigned) {
                         core.info('Wating for version to be reviewed and approved');

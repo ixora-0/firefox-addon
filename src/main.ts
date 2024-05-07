@@ -38,6 +38,7 @@ async function run(): Promise<void> {
       )
       if (result.success) {
         versionID = result.versionDetails.id
+        core.setOutput('version_url', result.versionDetails.file.url)
         clearInterval(updateVersionInterval)
         if (waitUntilSigned) {
           core.info('Wating for version to be reviewed and approved')
