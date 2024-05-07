@@ -4,7 +4,12 @@ import {baseURL} from './util'
 import {resolve} from 'path'
 import {createReadStream} from 'fs'
 import axios from 'axios'
-import {InitialUploadDetails, UploadDetails} from './types.d'
+import {
+  InitialUploadDetails,
+  TryUpdateResult,
+  UploadDetails,
+  VersionDetails
+} from './types.d'
 
 export async function createUpload(
   xpiPath: string,
@@ -33,10 +38,10 @@ export async function tryUpdateExtension(
   uuid: string,
   token: string,
   srcPath?: string
-): Promise<boolean> {
+): Promise<TryUpdateResult> {
   const details = await getUploadDetails(uuid, token)
   if (!details.valid) {
-    return false
+    return {success: false}
   }
 
   const url = `${baseURL}/addons/addon/${guid}/versions/`
@@ -55,7 +60,10 @@ export async function tryUpdateExtension(
     }
   })
   core.debug(`Create version response: ${JSON.stringify(response.data)}`)
-  return true
+  return {
+    success: true,
+    versionDetails: response.data
+  }
 }
 
 export async function getUploadDetails(
@@ -71,5 +79,20 @@ export async function getUploadDetails(
   core.debug(
     `Get upload details probe response: ${JSON.stringify(response.data)}`
   )
+  return response.data
+}
+
+export async function getVersionDetails(
+  guid: string,
+  token: string,
+  versionID: number
+): Promise<VersionDetails> {
+  const url = `${baseURL}/addons/addon/${guid}/versions/${versionID}`
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `JWT ${token}` // if it's unlisted we do need authorization
+    }
+  })
+  core.debug(`Get version details response: ${JSON.stringify(response.data)}`)
   return response.data
 }
