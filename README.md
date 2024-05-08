@@ -17,6 +17,8 @@ steps:
       guid: '{799c0914-748b-41df-a25c-22d008f9e83f}'
       xpi_path: web-scrobbler-firefox.zip
       src_path: web-scrobbler-src.zip # Optional
+      channel: listed # Optional, default is listed
+      wait_until_signed: false # Optional, default is false
 ```
 
 ## Credentials
