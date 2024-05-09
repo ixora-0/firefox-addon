@@ -101,7 +101,7 @@ function run() {
                     }
                 }
                 else if (versionDetails.file.status === 'disabled') {
-                    core.info('\u001b[38;5;1mVersion has been rejected, disabled, or not reviewed\u001b[0m');
+                    core.setFailed('Version has been rejected, disabled, or not reviewed');
                 }
             });
         }
