@@ -68,9 +68,7 @@ async function run(): Promise<void> {
       if (versionDetails.file.status === 'public') {
         core.info('\u001b[38;5;2mVersion has been approved\u001b[0m')
       } else if (versionDetails.file.status === 'disabled') {
-        core.info(
-          '\u001b[38;5;1mVersion has been rejected, disabled, or not reviewed\u001b[0m'
-        )
+        core.setFailed('Version has been rejected, disabled, or not reviewed')
       }
     }
   } catch (error) {
