@@ -19,6 +19,7 @@ steps:
       src_path: web-scrobbler-src.zip # Optional
       channel: listed # Optional, default is listed
       wait_until_signed: false # Optional, default is false
+      download_file_name: "web-scrobbler.xpi" # Optional
 ```
 
 ## Credentials
