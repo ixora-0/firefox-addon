@@ -55,6 +55,7 @@ function run() {
                 core.setFailed('Invalid channel type. Channel must be either "listed" or "unlisted".');
             }
             const waitUntilSigned = core.getBooleanInput('wait_until_signed') || false;
+            const downloadFileName = core.getInput("download_file_name");
             let token = (0, util_1.generateJWT)(key, secret);
             const uploadDetails = yield (0, request_1.createUpload)(xpiPath, token, channel);
             const timeout = 10 * 60 * 1000;
@@ -94,6 +95,10 @@ function run() {
                 }
                 if (versionDetails.file.status === 'public') {
                     core.info('\u001b[38;5;2mVersion has been approved\u001b[0m');
+                    if (downloadFileName) {
+                        token = (0, util_1.generateJWT)(key, secret);
+                        (0, request_1.downloadFile)(versionDetails.file.url, token, downloadFileName);
+                    }
                 }
                 else if (versionDetails.file.status === 'disabled') {
                     core.info('\u001b[38;5;1mVersion has been rejected, disabled, or not reviewed\u001b[0m');

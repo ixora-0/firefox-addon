@@ -1,6 +1,11 @@
 import * as core from '@actions/core'
 import {generateJWT} from './util'
-import {createUpload, getVersionDetails, tryUpdateExtension} from './request'
+import {
+  createUpload,
+  getVersionDetails,
+  tryUpdateExtension,
+  downloadFile
+} from './request'
 
 async function run(): Promise<void> {
   try {
@@ -16,6 +21,7 @@ async function run(): Promise<void> {
       )
     }
     const waitUntilSigned = core.getBooleanInput('wait_until_signed') || false
+    const downloadFileName = core.getInput('download_file_name')
 
     let token = generateJWT(key, secret)
     const uploadDetails = await createUpload(xpiPath, token, channel)
@@ -74,6 +80,10 @@ async function run(): Promise<void> {
       }
       if (versionDetails.file.status === 'public') {
         core.info('\u001b[38;5;2mVersion has been approved\u001b[0m')
+        if (downloadFileName) {
+          token = generateJWT(key, secret)
+          downloadFile(versionDetails.file.url, token, downloadFileName)
+        }
       } else if (versionDetails.file.status === 'disabled') {
         core.info(
           '\u001b[38;5;1mVersion has been rejected, disabled, or not reviewed\u001b[0m'
