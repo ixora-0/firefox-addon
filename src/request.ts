@@ -107,7 +107,7 @@ export async function downloadFile(
       headers: {
         Authorization: `JWT ${token}`
       },
-      responseType: 'blob'
+      responseType: 'arraybuffer'
     })
     writeFileSync(filename, response.data)
     core.info(`File downloaded successfully: ${filename}`)

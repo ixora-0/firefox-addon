@@ -55,7 +55,7 @@ function run() {
                 core.setFailed('Invalid channel type. Channel must be either "listed" or "unlisted".');
             }
             const waitUntilSigned = core.getBooleanInput('wait_until_signed') || false;
-            const downloadFileName = core.getInput("download_file_name");
+            const downloadFileName = core.getInput('download_file_name');
             let token = (0, util_1.generateJWT)(key, secret);
             const uploadDetails = yield (0, request_1.createUpload)(xpiPath, token, channel);
             const timeout = 10 * 60 * 1000;
@@ -254,7 +254,7 @@ function downloadFile(url, token, filename) {
                 headers: {
                     Authorization: `JWT ${token}`
                 },
-                responseType: 'blob'
+                responseType: 'arraybuffer'
             });
             (0, fs_1.writeFileSync)(filename, response.data);
             core.info(`File downloaded successfully: ${filename}`);
