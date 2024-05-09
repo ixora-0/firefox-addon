@@ -69,7 +69,7 @@ function run() {
                 const result = yield (0, request_1.tryUpdateExtension)(guid, uploadDetails.uuid, token, srcPath);
                 if (result.success) {
                     versionID = result.versionDetails.id;
-                    core.setOutput("version_url", result.versionDetails.file.url);
+                    core.setOutput('version_url', result.versionDetails.file.url);
                     clearInterval(updateVersionInterval);
                     if (waitUntilSigned) {
                         core.info('Wating for version to be reviewed and approved');
@@ -169,7 +169,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getVersionDetails = exports.getUploadDetails = exports.tryUpdateExtension = exports.createUpload = void 0;
+exports.downloadFile = exports.getVersionDetails = exports.getUploadDetails = exports.tryUpdateExtension = exports.createUpload = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const form_data_1 = __importDefault(__nccwpck_require__(4334));
 const util_1 = __nccwpck_require__(4024);
@@ -242,6 +242,24 @@ function getVersionDetails(guid, token, versionID) {
     });
 }
 exports.getVersionDetails = getVersionDetails;
+function downloadFile(url, token, filename) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield axios_1.default.get(url, {
+                headers: {
+                    Authorization: `JWT ${token}`
+                },
+                responseType: 'blob'
+            });
+            (0, fs_1.writeFileSync)(filename, response.data);
+            core.info(`File downloaded successfully: ${filename}`);
+        }
+        catch (error) {
+            core.setFailed(`Error downloading file: ${error}`);
+        }
+    });
+}
+exports.downloadFile = downloadFile;
 
 
 /***/ }),

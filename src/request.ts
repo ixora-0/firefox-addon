@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import FormData from 'form-data'
 import {baseURL} from './util'
 import {resolve} from 'path'
-import {createReadStream} from 'fs'
+import {createReadStream, writeFileSync} from 'fs'
 import axios from 'axios'
 import {
   InitialUploadDetails,
@@ -95,4 +95,23 @@ export async function getVersionDetails(
   })
   core.debug(`Get version details response: ${JSON.stringify(response.data)}`)
   return response.data
+}
+
+export async function downloadFile(
+  url: string,
+  token: string,
+  filename: string
+): Promise<void> {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `JWT ${token}`
+      },
+      responseType: 'blob'
+    })
+    writeFileSync(filename, response.data)
+    core.info(`File downloaded successfully: ${filename}`)
+  } catch (error) {
+    core.setFailed(`Error downloading file: ${error}`)
+  }
 }
