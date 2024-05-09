@@ -24,6 +24,10 @@ inputs:
     required: false
     default: false
     description: 'wait until AMO finished signing before exiting. this can take up to 24 hours or longer if your sumbission is selected for manual review.'
+  download_file_name:
+    required: false
+    default: ''
+    description: 'if wait_until_signed is true and download_file_name is given, the action will download the addon file from AMO as the specified name after it is signed.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
