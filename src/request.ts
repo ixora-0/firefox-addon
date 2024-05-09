@@ -110,7 +110,9 @@ export async function downloadFile(
       responseType: 'arraybuffer'
     })
     writeFileSync(filename, response.data)
-    core.info(`File downloaded successfully: ${filename}`)
+    core.info(
+      `\u001b[38;5;2mFile downloaded successfully: ${filename}\u001b[0m`
+    )
   } catch (error) {
     core.setFailed(`Error downloading file: ${error}`)
   }
